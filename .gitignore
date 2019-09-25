@@ -6,3 +6,6 @@ build
 
 # Ignore the doc files (for now)
 docs
+
+# Ignore symbolic links
+*.ln
