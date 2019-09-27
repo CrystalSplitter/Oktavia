@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.math.PI
 
+
 class ArraySignalTest {
     @Test fun testFullSlice() {
         val dut = ArraySignal(100, 10.0)

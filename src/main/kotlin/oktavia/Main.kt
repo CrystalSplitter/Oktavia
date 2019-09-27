@@ -4,6 +4,7 @@ import kotlin.math.PI
 import kotlin.math.sin
 import java.io.File
 
+
 fun main(args: Array<String>) {
     val freq = args[0].toDouble()
     val sampleRate = args[1].toDouble()
@@ -14,7 +15,7 @@ fun main(args: Array<String>) {
     File("my_input.csv").writeText(arrayToCSV(input.sampleList()))
 
     val freqDomain = simpleDFT(input.sampleList())
-    val timeDomain = invDFT(freqDomain)
+    val timeDomain = invSimpleDFT(freqDomain)
     val mags = freqDomain.map { it.magnitude() }
     val reals: List<Double> = timeDomain.map { it.re }
     File("my_output.csv").writeText(arrayToCSV(mags))
