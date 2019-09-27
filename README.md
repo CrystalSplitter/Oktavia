@@ -1,4 +1,7 @@
-# Oktavia: A Signal and Audio Processing Library for Kotlin
+# Oktavia
+*A Signal and Audio Processing Library for Kotlin*
+
+---
 
 This library is still under heavy development. Don't consider using this library
 until the roadmap is completed.
