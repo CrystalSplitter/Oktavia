@@ -2,9 +2,9 @@ package oktavia.util
 
 fun isPower2(x: Int): Boolean {
     var v: Int = x
-    while (v != 1) {
-        if (v % 2 != 0) {
-            return false
+    while (v % 2 == 0) {
+        if (v == 0) {
+            return true
         }
         v /= 2
     }
