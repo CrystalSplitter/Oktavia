@@ -3,7 +3,7 @@ package oktavia.util
 fun isPower2(x: Int): Boolean {
     var v: Int = x
     while (v % 2 == 0) {
-        if (v == 0) {
+        if (v == 1 || v == 0) {
             return true
         }
         v /= 2
