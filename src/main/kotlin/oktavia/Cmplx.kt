@@ -1,10 +1,9 @@
 package oktavia
 
-import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Cmplx(val re: Double = 0.0, val im: Double = 0.0) {
+class Cmplx(val re: Double = 0.0, val im: Double = 0.0): Number() {
     companion object {
         /**
          * At what point is it fair to say a component does not exist?
@@ -14,6 +13,15 @@ class Cmplx(val re: Double = 0.0, val im: Double = 0.0) {
             return Cmplx(r * cos(theta), r * sin(theta))
         }
     }
+    constructor(re: Double): this(re, 0.0)
+
+    override fun toByte(): Byte { throw NotImplementedError() }
+    override fun toChar(): Char { throw NotImplementedError() }
+    override fun toFloat(): Float = re.toFloat()
+    override fun toShort(): Short { throw NotImplementedError() }
+    override fun toInt(): Int { throw NotImplementedError() }
+    override fun toLong(): Long { throw NotImplementedError() }
+    override fun toDouble(): Double = re
 
     fun magnitude(): Double = kotlin.math.sqrt(re*re + im*im)
     fun angle(): Double = kotlin.math.atan2(im, re)

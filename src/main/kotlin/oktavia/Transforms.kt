@@ -7,18 +7,20 @@ import kotlin.math.sin
 import oktavia.util.rightPad
 import oktavia.util.isPower2
 
-const val SAMPLE_MIN: Int = 32
+private const val SAMPLE_MIN: Int = 32
 
 
 fun fft(input: List<Double>, numSamples: Int): MutableList<Cmplx> {
     require (isPower2(numSamples)) { "numSamples must be a power of 2" }
-    return recursiveCooleyTukey(rightPad(input, numSamples))
+    return recursiveCooleyTukey(rightPad(input, numSamples, 0.0))
 }
+
 
 fun ifft(input: List<Cmplx>, sliceLength: Int): MutableList<Cmplx> {
     require (isPower2(input.size)) { "input size must be a power of 2" }
     return invRecursiveCooleyTukey(input).subList(0, sliceLength)
 }
+
 
 fun simpleDFT(input: List<Double>): ArrayList<Cmplx> {
     val output: ArrayList<Cmplx> = ArrayList<Cmplx>(input.size)
@@ -43,6 +45,7 @@ fun simpleDFT(input: List<Double>): ArrayList<Cmplx> {
     return output
 }
 
+
 fun invSimpleDFT(input: List<Cmplx>): ArrayList<Cmplx> {
     val output: ArrayList<Cmplx> = ArrayList(input.size)
     val inverseInputSize: Double = 1.0/input.size.toDouble()
@@ -59,9 +62,8 @@ fun invSimpleDFT(input: List<Cmplx>): ArrayList<Cmplx> {
     return output
 }
 
-private fun recursiveCooleyTukey(input: List<Double>): ArrayList<Cmplx> {
 
-    require(input.size % 2 == 0) { "Input must be a power of 2" }
+private fun recursiveCooleyTukey(input: List<Double>): ArrayList<Cmplx> {
 
     if (input.size <= SAMPLE_MIN) {
         return simpleDFT(input)
@@ -89,6 +91,7 @@ private fun recursiveCooleyTukey(input: List<Double>): ArrayList<Cmplx> {
     return output
 }
 
+
 private fun invRecursiveCooleyTukey(input: List<Cmplx>): ArrayList<Cmplx> {
 
     require(input.size % 2 == 0) { "Input must be a power of 2" }
@@ -103,13 +106,8 @@ private fun invRecursiveCooleyTukey(input: List<Cmplx>): ArrayList<Cmplx> {
     val ifftOdd = invRecursiveCooleyTukey(input.slice(1 until input.size step 2))
     val factor: ArrayList<Cmplx> = ArrayList(input.size)
 
-    for (i in 0 until input.size) {
-        factor.add(
-                Cmplx(
-                        cos(2*PI*i.toDouble()/input.size),
-                        sin(2*PI*i.toDouble()/input.size)
-                )
-        )
+    for (i in input.indices) {
+        factor.add(Cmplx.fromPolar(1.0, 2*PI*i.toDouble()/input.size))
     }
     for (i in 0 until input.size/2) {
         output.add((ifftEven[i] + factor[i] * ifftOdd[i]) * 0.5)
