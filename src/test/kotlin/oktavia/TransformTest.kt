@@ -7,7 +7,7 @@ import kotlin.test.Test
 class TransformTest {
     @Test fun `fft and simpleDFT should have same output`() {
         val signalLength = 1024
-        val signal = DoubleSignal(signalLength, 10.0) {
+        val signal = DoubleSignal(signalLength, 10.0f) {
             kotlin.math.cos(2*kotlin.math.PI*it/signalLength)
         }
         val d1: ArrayList<Cmplx> = simpleDFT(signal.sampleList())
@@ -23,7 +23,7 @@ class TransformTest {
 
     @Test fun `inverse dft of a dft should be the same`() {
         val signalLength = 1024
-        val signal = DoubleSignal(signalLength, 5.0) {
+        val signal = DoubleSignal(signalLength, 5.0f) {
             kotlin.math.cos(2*kotlin.math.PI*it/signalLength)
         }
         val recreation = invSimpleDFT(simpleDFT(signal.sampleList()))
@@ -35,7 +35,7 @@ class TransformTest {
 
     @Test fun `inverse dft of a fft should be the same`() {
         val signalLength = 1024
-        val signal = DoubleSignal(signalLength, 69.0) {
+        val signal = DoubleSignal(signalLength, 69.0f) {
             kotlin.math.cos(2*kotlin.math.PI*it/signalLength)
         }
         val recreation = invSimpleDFT(fft(signal.sampleList(), 1024))
@@ -47,7 +47,7 @@ class TransformTest {
 
     @Test fun `ifft of a dft should be the same`() {
         val signalLength = 1024
-        val signal = DoubleSignal(signalLength, 80.0) {
+        val signal = DoubleSignal(signalLength, 80.0f) {
             kotlin.math.cos(2*kotlin.math.PI*it/signalLength)
         }
         val recreation = ifft(simpleDFT(signal.sampleList()), 1024)
@@ -59,7 +59,7 @@ class TransformTest {
 
     @Test fun `ifft of a fft should be the same`() {
         val signalLength = 1024
-        val signal = DoubleSignal(signalLength, 42.0) {
+        val signal = DoubleSignal(signalLength, 42.0f) {
             kotlin.math.cos(2*kotlin.math.PI*it/signalLength)
         }
         val recreation = ifft(fft(signal.sampleList(), 2048), 2048)

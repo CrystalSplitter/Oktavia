@@ -9,9 +9,9 @@ import kotlin.math.pow
 
 class DoubleSignal(
         override val size: Int,
-        override var sampleRate: Double,
+        override var sampleRate: Float,
         initFunction: ((it: Int) -> Double)? = null)
-    : Signal() {
+    : Signal {
 
     private val dataArray = DoubleArray(size)
 

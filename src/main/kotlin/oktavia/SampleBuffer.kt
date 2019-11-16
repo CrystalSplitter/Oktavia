@@ -1,7 +1,7 @@
 package oktavia
 
 
-class SignalBuffer(capacity: Int): Iterable<Float> {
+class SampleBuffer(capacity: Int) {
     var writePos: Int = 0
         private set
     var readPos: Int = 0
@@ -9,16 +9,18 @@ class SignalBuffer(capacity: Int): Iterable<Float> {
     private var data: Array<Float> = Array(capacity + 1) { Float.NaN }
     val capacity: Int
         get() = this.data.size - 1
+    val size: Int
+        get() = this.calculateSize()
 
     inner class SignalBufferIterator: Iterator<Float> {
         var pos: Int = 0
 
         override fun hasNext(): Boolean {
-            return this.pos != this@SignalBuffer.size()
+            return this.pos != this@SampleBuffer.size
         }
 
         override fun next(): Float {
-            val output = this@SignalBuffer[pos]
+            val output = this@SampleBuffer[pos]
             this.pos++
             return output
         }
@@ -52,7 +54,7 @@ class SignalBuffer(capacity: Int): Iterable<Float> {
         data[wrap(writePos - 1 - i)] = value
     }
 
-    override fun iterator(): Iterator<Float> {
+    fun iterator(): Iterator<Float> {
         return SignalBufferIterator()
     }
 
@@ -61,17 +63,29 @@ class SignalBuffer(capacity: Int): Iterable<Float> {
         reset()
     }
 
-    fun wrap(value: Int): Int = kotlin.math.abs(value % data.size)
+    private fun wrap(value: Int): Int {
+        // This conducts a true modulo from the remainder.
+        return ((value % this.data.size) + this.data.size) % this.data.size
+    }
 
     fun reset() {
         readPos = 0
         writePos = 0
     }
 
+    fun fill(value: Float) {
+        for (i in this.data.indices) {
+            this.push(value)
+        }
+    }
+
+    /*
+     */
+
     /**
      * @Returns Number of samples stored in the buffer currently. Maxes out at capacity.
      */
-    fun size(): Int {
+    private fun calculateSize(): Int {
         if (writePos >= readPos) {
             return writePos - readPos
         }

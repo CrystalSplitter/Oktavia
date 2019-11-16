@@ -3,9 +3,9 @@ package oktavia
 
 class FloatSignal(
         override val size: Int,
-        override var sampleRate: Double,
+        override var sampleRate: Float,
         initFunction: ((it: Int) -> Float)? = null)
-    : Signal() {
+    : Signal {
 
     private val dataArray = FloatArray(size)
 

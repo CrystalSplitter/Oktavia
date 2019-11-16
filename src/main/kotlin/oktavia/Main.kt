@@ -7,8 +7,6 @@ import javax.sound.sampled.AudioInputStream
 import javax.sound.sampled.AudioSystem
 
 fun main(args: Array<String>) {
-
-    args.forEach { println(it) }
     readSoundFile(args[0])
 
     /*
@@ -32,13 +30,12 @@ fun main(args: Array<String>) {
 fun readSoundFile(name: String) {
     println("Looking at file: $name")
     val stream: AudioInputStream = AudioSystem.getAudioInputStream(File(name))
-    val signalGroup = SignalGroup(256, stream.format.channels)
-    signalGroup.readFromAudioStream(stream, 40)
-    for (i in 1..20) {
-        signalGroup.pop().forEach { print("$it, ") }
-        println()
-    }
-    //signal.forEachIndexed { idx, it -> println("$idx -> $it") }
+    //val signalGroup = SignalGroup(256, stream.format.sampleRate, stream.format.channels)
+    val filter = FIRFilter(Array(50) { 2.0f/50.0f }.toList())
+    filter.connectInput(stream)
+    val play = PlaySignal()
+    play.connectInput(filter)
+    play.start()
 }
 
 fun arrayToCSV(array: List<Any?>): String {
