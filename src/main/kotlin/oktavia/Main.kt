@@ -7,7 +7,11 @@ import javax.sound.sampled.AudioInputStream
 import javax.sound.sampled.AudioSystem
 
 fun main(args: Array<String>) {
-    readSoundFile(args[0])
+    if (args.size > 0) {
+        readSoundFile(args[0])
+    } else {
+        readSoundFile("/home/crystal/Documents/wip_one_channel.wav")
+    }
 
     /*
     val freq = args[0].toDouble()
@@ -30,12 +34,15 @@ fun main(args: Array<String>) {
 fun readSoundFile(name: String) {
     println("Looking at file: $name")
     val stream: AudioInputStream = AudioSystem.getAudioInputStream(File(name))
-    //val signalGroup = SignalGroup(256, stream.format.sampleRate, stream.format.channels)
-    val filter = FIRFilter(Array(50) { 2.0f/50.0f }.toList())
-    filter.connectInput(stream)
-    val play = PlaySignal()
-    play.connectInput(filter)
-    play.start()
+    val pipeline = Pipeline().apply {
+        val source = stage(AudioSource(stream))
+        val filter = stage(
+                FIRFilter(Array(50) { 1.0f/50.0f }.toList(), inputConnection = source.output)
+        )
+        stage(SignalPlayer(inputConnection = filter.output))
+        stage(SignalPlayer(inputConnection = source.output))
+    }
+    pipeline.run()
 }
 
 fun arrayToCSV(array: List<Any?>): String {

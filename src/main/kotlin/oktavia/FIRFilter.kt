@@ -1,32 +1,41 @@
 package oktavia
 
-import javax.sound.sampled.AudioInputStream
-
-class FIRFilter (val coefficients: List<Float>, val batchSize: Int = 1) {
+class FIRFilter (
+        val coefficients: List<Float>,
+        val batchSize: Int = 1,
+        override val name: String = "FIRFilter",
+        inputConnection: OutputPort? = null,
+        outputConnections: Array<InputPort>? = null
+): PipelineStage {
     private val buffer = SignalGroup(coefficients.size, Float.NaN)
-    private var inputSource: AudioInputStream? = null
+    val input: InputPort = InputPort(this, "input")
+    val output: OutputPort = OutputPort(this, "output") { this.peek() }
+    override val inputPorts: HashMap<String, InputPort>
+        get() = hashMapOf(input.name to input)
+    override val outputPorts: HashMap<String, OutputPort>
+        get() = hashMapOf(output.name to output)
+
     val sampleRate: Float
         get() = this.buffer.sampleRate
 
     init {
+        if (inputConnection != null) {
+            this.input.connect(inputConnection)
+        }
+        if (outputConnections != null) {
+            for (outConnection in outputConnections) {
+                this.output.connect(outConnection)
+            }
+        }
         this.buffer.channel(0).fill(0.0f)
     }
 
-    /**
-     * Connect the input of this filter to a stream source.
-     */
-    fun connectInput(stream: AudioInputStream) {
-        inputSource = stream
-        buffer.sampleRate = stream.format.sampleRate
+    fun peek(frames: Int): FloatArray {
+        return FloatArray(frames) { this.peek() }
     }
 
-    fun read(frames: Int): FloatArray {
-        return FloatArray(frames) { this.read() }
-    }
-
-    fun read(): Float {
-        val inputSource = this.inputSource ?: throw IllegalStateException("Need input source to read.")
-        buffer.read(inputSource, batchSize)
+    fun peek(): Float {
+        buffer.push(input.peek(), 0)
         var out = 0.0f
         coefficients.forEachIndexed { idx, it ->
             out += it * buffer.channel(0)[idx]

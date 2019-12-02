@@ -37,7 +37,7 @@ class SampleBuffer(capacity: Int) {
     }
 
     fun pop(): Float {
-        require(readPos != writePos) { "Buffer empty; cannot read." }
+        require(readPos != writePos) { "Buffer empty; cannot push." }
         val value = data[readPos]
         incrementPopPos()
         return value

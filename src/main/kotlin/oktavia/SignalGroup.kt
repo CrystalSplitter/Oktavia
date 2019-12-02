@@ -26,20 +26,30 @@ class SignalGroup(bufferCapacity: Int, var sampleRate: Float = DEFAULT_SAMPLE_RA
         return this.channels[idx]
     }
 
+    /**
+     * Add a new channel to the SignalGroup
+     */
     fun addChannel() {
         this.channels.add(SampleBuffer(bufferCapacity))
     }
 
-    fun read(stream: AudioInputStream, numFrames: Int) {
+    /**
+     * @param[stream] Stream to read from.
+     * @param[numFrames] Number of frames to read from the stream.
+     * @return The number of frames actually read into the SignalGroup.
+     */
+    fun push(stream: AudioInputStream, numFrames: Int): Int {
         this.sampleRate = stream.format.sampleRate
         val frameSize: Int = stream.format.frameSize
         val origFrameIdx = currentFrameIdx
+        var numReadFrames: Int = 0
         while (currentFrameIdx < origFrameIdx + numFrames) {
             val byteData = ByteArray(frameSize)
-            stream.read(byteData)
-            //print(">>> ")
-            //byteData.forEach { print(String.format("|%02X", it)) }
-            //println("|")
+            val numReadBytes: Int = stream.read(byteData)
+            if (numReadBytes < byteData.size) {
+                break
+            }
+            numReadFrames++
             val channels = stream.format.channels
             for (i in 0 until channels) {
                 val sliceRange: IntRange = i * (frameSize/channels) until (i + 1) * (frameSize/channels)
@@ -49,12 +59,20 @@ class SignalGroup(bufferCapacity: Int, var sampleRate: Float = DEFAULT_SAMPLE_RA
             // Next frame
             currentFrameIdx++
         }
+        return numReadFrames
     }
 
-    fun read(array: FloatArray, numFrames: Int, channel: Int) {
-        array.forEach { this.channels[channel].push(it) }
+    fun push(array: FloatArray, numFrames: Int, channel: Int) {
+        array.forEach { this.push(it, channel) }
     }
 
+    fun push(value: Float, channel: Int) {
+        this.channels[channel].push(value)
+    }
+
+    /**
+     * Store a byte array into a single channel.
+     */
     fun loadByteArray(byteData: ByteArray, isBigEndian: Boolean, channelIndex: Int) {
         // Buffer size has to at least be 4, because that's the size of an int.
         val bufferSize = maxOf(byteData.size, 4)

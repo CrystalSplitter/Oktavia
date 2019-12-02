@@ -1,7 +1,6 @@
 package oktavia
 
 import oktavia.util.bytesToBits
-import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.sound.sampled.AudioFormat
@@ -11,46 +10,54 @@ import javax.sound.sampled.SourceDataLine
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-class PlaySignal() {
-    var inputSource: FIRFilter? = null
+class SignalPlayer(override val name: String = "SignalPlayer", inputConnection: OutputPort? = null): TargetStage {
+    var input: InputPort = InputPort(this, "input")
+    override val inputPorts: HashMap<String, InputPort>
+        get() = hashMapOf(this.input.name to this.input)
+    override val outputPorts: HashMap<String, OutputPort>
+        get() = hashMapOf()
 
-    /**
-     * Connect the input of this filter to a stream source.
-     */
-    fun connectInput(stream: FIRFilter) {
-        inputSource = stream
-    }
+    private val outputLine: SourceDataLine
+    private val sampleSize: Int = 2
+    private val channels: Int = 1
+    private val audioFormat: AudioFormat
+    private var started: Boolean = false
 
-    fun start() {
-        require(inputSource != null) { IllegalStateException("Need input source to read.") }
-        val sampleSize = 2
-        val channels = 1
+    private var numStoredSamples: Int = 0
+    private var storedSamples: FloatArray = FloatArray(128) { 0.0f }
 
-        //val audioStream = AudioSystem.getAudioInputStream(File("/home/crystal/Documents/wip_one_channel.wav"))
-        println(inputSource!!.sampleRate)
-        val format = AudioFormat(
-                inputSource!!.sampleRate,
+    init {
+        if (inputConnection != null) {
+            this.input.connect(inputConnection)
+        }
+        this.audioFormat = AudioFormat(
+                44100.0f,
                 sampleSize.bytesToBits(),
                 channels,
                 true,
                 false
         )
         //val convertedStream = AudioSystem.getAudioInputStream(format, audioStream)
-        val info: DataLine.Info = DataLine.Info(SourceDataLine::class.java, format)
-        val outputLine = AudioSystem.getLine(info) as SourceDataLine
-        outputLine.open(format)
-        outputLine.start()
+        val info: DataLine.Info = DataLine.Info(SourceDataLine::class.java, this.audioFormat)
+        this.outputLine = AudioSystem.getLine(info) as SourceDataLine
+    }
 
-        while (true) {
+    override fun pollNewData() {
+        if (!started) {
+            this.outputLine.open(this.audioFormat)
+            outputLine.start()
+            started = true
+        }
+        this.storedSamples[this.numStoredSamples] = this.input.peek()
+        this.numStoredSamples++
+        if (this.numStoredSamples > 127) {
             val byteArray = this.convertToByteArray(
-                    inputSource!!.read(1000),
-                    sampleSize/channels,
+                    this.storedSamples,
+                    this.sampleSize / this.channels,
                     false
             )
-            //print("<-< ")
-            //byteArray.forEach { print(String.format("|%02X", it)) }
-            //println("|")
             outputLine.write(byteArray, 0, byteArray.size)
+            this.numStoredSamples = 0
         }
     }
 

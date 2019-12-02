@@ -8,12 +8,17 @@ plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin on the JVM.
     id("org.jetbrains.kotlin.jvm").version("1.3.31")
     java
+    application
 }
 
 repositories {
     // Use jcenter for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
+}
+
+application {
+    mainClassName = "oktavia.MainKt"
 }
 
 dependencies {
@@ -25,4 +30,9 @@ dependencies {
 
     // Use the Kotlin JUnit integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+}
+
+tasks.register<Exec>("runner") {
+    this.group = "Custom Tasks"
+    commandLine("./oktavia_run.sh", "/home/crystal/Documents/wip_one_channel.wav")
 }
